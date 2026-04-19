@@ -1,7 +1,6 @@
 #!/bin/bash
 
 
- # Check if the first argument is --debug
 if [[ "$1" == "--debug" ]]; then
     DEBUG=true
     
@@ -12,10 +11,9 @@ else
     DEBUG=false
 fi
 
-# Use the flag
 if [ "$DEBUG" = true ]; then
     echo "DEBUG MODE: ON"
-    # set -x
+    set -x
 fi
 
 
@@ -35,6 +33,8 @@ ANSI_RESET=$'\e[0m'
 function prefix_scope { echo "$1 ${ANSI_PURPLE}$2${ANSI_RESET}..."; }
 function postfix_scope { echo "$1 ${ANSI_PURPLE}$2${ANSI_RESET}... ${ANSI_BLUE}DONE${ANSI_RESET}"; echo ""; }
 
+
+CHECK_REPO_RETURN_VALUE=""
 function check_repo { 
 	GIT_URL=$1
 	NAME=$2
@@ -53,6 +53,8 @@ function check_repo {
 
 	echo "Ended with comment ${ANSI_YELLOW}${OUTPUT}${ANSI_RESET}"
 	postfix_scope "Working with repo ${ANSI_BLUE}${GIT_URL}${ANSI_RESET}"
+
+    CHECK_REPO_RETURN_VALUE="${ABS_PATH}"
 }
 
 
@@ -132,7 +134,32 @@ prefix_scope "Checking" "repos"
 
 check_repo "https://github.com/sh1njiteita/snj.nvim.git" "nvim/.config/nvim"
 check_repo "https://github.com/sh1njiteita/snj.kitty.git" "kitty/.config/kitty"
+
+
 check_repo "https://github.com/sh1njiteita/snj.zsh.git" "zsh/.config/zsh"
+ZSH_PARTS_PATH=${CHECK_REPO_RETURN_VALUE}
+ZSH_PARTS_FILES=$( "${ZSH_PARTS_PATH}"/*.zsh )
+ZSH_TARGET_FILE="${DOTFILES_DIR}/zsh/.zshrc"
+
+echo "Post zsh hook"
+
+if [ -e ${ZSH_TARGET_FILE} ]; then
+    rm ${ZSH_TARGET_FILE}
+    touch ${ZSH_TARGET_FILE}
+fi
+
+for file in "${ZSH_PARTS_FILES[@]}"; do
+    if [ -f ${file} ]; then
+        echo "source ${file}" >> ${ZSH_TARGET_FILE}
+        echo "Added source for ${ANSI_PURPLE}${file}${ANSI_RESET}"
+    fi
+done
+
+
+
+
+
+
 check_repo "https://github.com/sh1njiteita/snj.omp.git" "omp/.config/omp"
 
 
