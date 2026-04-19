@@ -15,7 +15,6 @@ while getopts "dplub" opt; do
         d) # DEBUG
             DEBUG=true
             echo "Debug mode: ON"
-            set -x
             ;;
         p) # PULL
             UPDATE=true 
